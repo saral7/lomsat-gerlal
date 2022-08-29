@@ -1,0 +1,126 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+#define lli long long int
+const int N = 100100;
+int t, n, a, b;
+lli u[N], col[N], sz[N], cnt[N], s[N], sol[N];
+map<int, int>m[N];
+vector<int>v[N];
+
+int ufind (int x) {
+    if (u[x] == x) return u[x];
+    u[x] = ufind(u[x]);
+    return u[x];
+}
+
+void umerge (int x, int y) {
+    int node = x;
+    //cout << x << " " << y << " " << node << endl;
+    x = ufind(x);
+    y = ufind(y);
+    if (x == y) return;
+    if (sz[x] > sz[y]) {///y je manja -> x postaje parent
+        u[y] = x;
+        sz[x] += sz[y];
+        sz[y] = 0;
+        for (std::map<int, int>::iterator it = m[y].begin(); it != m[y].end(); it++) {
+            int c = it->first;
+            int kol = it->second;
+            if (kol == 0) continue;
+
+            if (m[x][c]+kol == cnt[x]) {
+                s[x] += c;
+            }
+            else {
+                if (m[x][c]+kol > cnt[x]) {
+                    cnt[x] = m[x][c]+kol;
+                    s[x] = c;
+                }
+            }
+            m[x][c] += kol;
+            m[y][c] = 0;
+        }
+        sol[node] = s[x];
+    }
+    else {///x je manja -> y postaje parent
+        u[x] = y;
+        sz[y] += sz[x];
+        sz[x] = 0;
+        for (std::map<int, int>::iterator it = m[x].begin(); it != m[x].end(); it++) {
+            int c = it->first;
+            int kol = it->second;
+            if (kol == 0) continue;
+
+            if (m[y][c]+kol == cnt[y]) {
+                s[y] += c;
+            }
+            else {
+                if (m[y][c]+kol > cnt[y]) {
+                    cnt[y] = m[y][c]+kol;
+                    s[y] = c;
+                }
+            }
+            m[y][c] += kol;
+            m[x][c] = 0;
+        }
+        sol[node] = s[y];
+    }
+    return;
+}
+
+void debug () {
+    for (int i = 1; i <= n; i++) {
+        cout << sol[i] << " ";
+    }
+    cout << endl;
+    return;
+}
+
+void dfs (int node, int par) {
+    for (int i = 0; i < v[node].size(); i++) {
+        int sus = v[node][i];
+        if (sus == par) continue;
+        dfs (sus, node);
+    }
+    for (int i = 0; i < v[node].size(); i++) {
+        int sus = v[node][i];
+        if (sus == par) continue;
+        umerge (node, sus);
+    }
+    return;
+}
+
+
+
+void solve () {
+    cin >> n;
+    for (int i = 1; i <= n; i++) {
+        cin >> col[i];
+        u[i] = i;
+        sz[i] = 1;
+        m[i][col[i]]++;
+        s[i] = col[i];
+        sol[i] = col[i];
+        cnt[i] = 1;
+    }
+    for (int i = 1; i <= n-1; i++) {
+        cin >> a >> b;
+        v[a].push_back(b);
+        v[b].push_back(a);
+    }
+    dfs (1, -1);
+    for (int i = 1; i <= n; i++) {
+        cout << sol[i] << " ";
+    }
+return;
+}
+
+int main () {
+    ios_base::sync_with_stdio(false);
+    cin.tie(0);
+    cout.tie(0);
+	solve();
+
+return 0;
+}
